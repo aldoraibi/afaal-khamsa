@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎮 لعبة الأفعال الخمسة</title>
+  <style>
+    :root {
+      --bg:#0f172a;           /* خلفية داكنة أنيقة */
+      --card:#0b1224;         /* كرت */
+      --txt:#e5e7eb;          /* نص */
+      --muted:#9ca3af;        /* نص ثانوي */
+      --primary:#7c3aed;      /* بنفسجي */
+      --primary-2:#6d28d9;
+      --ok:#22c55e;           /* أخضر */
+      --bad:#ef4444;          /* أحمر */
+      --accent:#06b6d4;       /* سماوي */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1e293b 10%, transparent 40%),
+                  radial-gradient(1200px 600px at 120% 10%, #111827 10%, transparent 40%),
+                  var(--bg);
+      color:var(--txt); line-height:1.65;
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:24px}
+    header{text-align:center;margin-bottom:12px}
+    .logo{font-size:46px; filter: drop-shadow(0 6px 20px rgba(124,58,237,.4));}
+    h1{margin:6px 0 4px;font-size:28px}
+    .sub{color:var(--muted); font-size:14px}
+
+    .stats{display:flex;gap:12px;justify-content:center;margin:16px 0 24px; flex-wrap:wrap}
+    .stat{background:linear-gradient(180deg, #0f1b3a, #0b1224);
+      border:1px solid #1f2a4d; border-radius:16px; padding:12px 16px; min-width:120px; text-align:center;
+      box-shadow:0 12px 28px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.04)}
+    .stat span{color:var(--muted); font-size:13px}
+    .stat b{display:block;font-size:24px; letter-spacing:.5px}
+
+    .card{
+      background:linear-gradient(180deg, #0c142b, #0a1122);
+      border:1px solid #1b274a; border-radius:18px; padding:20px; margin-bottom:16px;
+      box-shadow:0 20px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04)
+    }
+
+    .title{font-weight:800;font-size:19px;margin-bottom:8px;color:#e9eaf6}
+    .big{font-size:28px;font-weight:800;color:var(--accent);margin:6px 0 10px;text-align:center}
+    .hint{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:640px){ .grid{grid-template-columns:1fr 1fr} }
+
+    button{
+      border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;transition:.2s;
+      background:linear-gradient(180deg, #131f3f, #0e1830); color:#dbeafe;
+      border:1px solid #1f2a4d; text-shadow:0 1px 0 rgba(0,0,0,.4)
+    }
+    button:hover{transform:translateY(-2px)}
+    .btn{ background:linear-gradient(180deg, var(--primary), var(--primary-2)); border-color:#5527b3; color:#fff }
+    .btn:hover{filter:brightness(1.08)}
+    .ok{background:linear-gradient(180deg, rgba(34,197,94,.15), rgba(34,197,94,.08)); border-color:#276d43; color:#b7f7cf}
+    .bad{background:linear-gradient(180deg, rgba(239,68,68,.15), rgba(239,68,68,.08)); border-color:#742d2d; color:#ffc9c9}
+    .center{text-align:center}
+    .muted{color:var(--muted)}
+    .hidden{display:none}
+    .feedback{margin-top:10px;padding:12px;border-radius:12px;border:1px solid #23325f}
+
+    /* لمسات حركة */
+    .pop{animation:pop .35s ease-out}
+    @keyframes pop{0%{transform:scale(.98);opacity:.0} 60%{transform:scale(1.02)} 100%{transform:scale(1);opacity:1}}
+
+    /* شريط تقدم بسيط */
+    .bar{height:8px;background:#132046;border:1px solid #1f2a4d;border-radius:999px;overflow:hidden;margin:8px 0 0}
+    .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg, var(--accent), var(--primary)); transition:width .35s ease}
+
+    .footer-note{color:var(--muted);font-size:13px;text-align:center;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="pop">
+      <div class="logo">📚</div>
+      <h1>لعبة الأفعال الخمسة</h1>
+      <div class="sub">تعلّم • اختبر • تدرب — يعمل بالكامل بدون إنترنت</div>
+    </header>
+
+    <!-- الإحصاءات -->
+    <div class="stats pop">
+      <div class="stat"><span>النقاط</span><b id="score">0</b></div>
+      <div class="stat"><span>المستوى</span><b id="level">1</b></div>
+      <div class="stat"><span>متتالية</span><b id="streak">0</b></div>
+    </div>
+
+    <!-- البداية -->
+    <section id="screen-start" class="card pop">
+      <div class="title">الخطة</div>
+      <ul class="hint" style="margin:8px 0 14px">
+        <li>تعريف سريع للأفعال الخمسة.</li>
+        <li>اختبار التعريف (٣ أسئلة).</li>
+        <li>اختبار التصريف (٤ أسئلة).</li>
+        <li>تدريبات سريعة بنعم/لا.</li>
+      </ul>
+      <div class="center">
+        <button class="btn" id="btn-start">ابدأ اللعبة 🚀</button>
+      </div>
+    </section>
+
+    <!-- التعريف -->
+    <section id="screen-def" class="card hidden pop">
+      <div class="title" id="def-title">ما هي الأفعال الخمسة؟</div>
+      <div class="big" id="def-icon">📖</div>
+      <div class="hint" id="def-content">
+        الأفعال الخمسة هي كل فعل مضارع اتصل بألف الاثنين أو واو الجماعة أو ياء المخاطبة.
+      </div>
+      <div class="bar"><i id="def-bar"></i></div>
+      <div class="center" style="margin-top:14px">
+        <button class="btn" id="btn-def-next">التالي ➡️</button>
+      </div>
+    </section>
+
+    <!-- متعدد الخيارات -->
+    <section id="screen-mc" class="card hidden pop">
+      <div class="title" id="mc-title">اختبار</div>
+      <div class="big" id="mc-big">❓</div>
+      <div class="hint" id="mc-question">—</div>
+      <div class="grid" id="mc-options" style="margin-top:12px"></div>
+      <div id="mc-feedback" class="feedback hidden"></div>
+      <div class="center" style="margin-top:10px">
+        <button id="btn-mc-next" class="btn hidden">السؤال التالي ➡️</button>
+      </div>
+    </section>
+
+    <!-- نعم/لا -->
+    <section id="screen-yn" class="card hidden pop">
+      <div class="title">تدريبات سريعة</div>
+      <div class="big" id="yn-word">—</div>
+      <div class="hint">هل هذه من الأفعال الخمسة؟</div>
+      <div class="grid" style="margin-top:12px">
+        <button id="btn-yes">نعم، من الأفعال الخمسة</button>
+        <button id="btn-no">لا، ليست منها</button>
+      </div>
+      <div id="yn-feedback" class="feedback hidden"></div>
+      <div class="center" style="margin-top:10px">
+        <button id="btn-yn-next" class="btn hidden">التالي ➡️</button>
+      </div>
+    </section>
+
+    <!-- النهاية -->
+    <section id="screen-end" class="card hidden center pop">
+      <div style="font-size:48px;margin-bottom:8px">🏆</div>
+      <div class="title">أحسنت! أنهيت المراحل الأساسية</div>
+      <div class="hint">النقاط النهائية: <b id="final-score">0</b> — المستوى: <b id="final-level">1</b></div>
+      <div style="margin-top:14px">
+        <button id="btn-restart" class="btn">إعادة اللعب 🔄</button>
+      </div>
+      <div class="footer-note">واصل التدريبات السريعة لزيادة نقاطك ومهارتك.</div>
+    </section>
+  </div>
+
+  <script>
+    /* ====== صوتيات تحفيزية (تصفيق وهُوْ) عبر WebAudio — بدون ملفات خارجية ====== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playApplause(){
+      const now = audioCtx.currentTime;
+      for(let i=0;i<14;i++){
+        const t = now + Math.random()*0.7;              // توزيع عشوائي خلال 0.7ث
+        const dur = 0.12 + Math.random()*0.08;          // مدة كل تصفيفة
+        const buf = audioCtx.createBuffer(1, audioCtx.sampleRate*dur, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for(let j=0;j<data.length;j++) data[j] = (Math.random()*2-1) * (1-j/data.length); // ضجيج مع خفوت
+        const src = audioCtx.createBufferSource(); src.buffer = buf;
+        const bp = audioCtx.createBiquadFilter(); bp.type='highpass'; bp.frequency.value = 1200;
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.001,t); g.gain.exponentialRampToValueAtTime(0.25,t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+        src.connect(bp).connect(g).connect(audioCtx.destination); src.start(t); src.stop(t+dur+0.02);
+      }
+    }
+
+    function playBoo(){
+      const now = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type='sawtooth'; o.frequency.setValueAtTime(180, now);
+      o.frequency.exponentialRampToValueAtTime(140, now+0.6); // نزول بسيط
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.25, now+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, now+0.8);
+      const nf = audioCtx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value = 300; nf.Q.value=0.7;
+      // قليل من الضجيج لملء الصوت
+      const nbuf = audioCtx.createBuffer(1, audioCtx.sampleRate*0.8, audioCtx.sampleRate);
+      const nd = nbuf.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i] = (Math.random()*2-1)*0.2;
+      const nsrc = audioCtx.createBufferSource(); nsrc.buffer = nbuf;
+      const ng = audioCtx.createGain(); ng.gain.value = 0.15;
+      o.connect(g).connect(audioCtx.destination);
+      nsrc.connect(nf).connect(ng).connect(audioCtx.destination);
+      o.start(now); o.stop(now+0.82); nsrc.start(now); nsrc.stop(now+0.82);
+    }
+
+    /* ====== الحالة العامة ====== */
+    const state = {
+      score: 0, level: 1, streak: 0,
+      phase: 'start',
+      defStep: 0,
+      mcIndex: 0,
+      drillCount: 0, maxDrill: 10
+    };
+
+    /* ====== عناصر DOM ====== */
+    const S = id => document.getElementById(id);
+    const screens = {
+      start: S('screen-start'),
+      def: S('screen-def'),
+      mc: S('screen-mc'),
+      yn: S('screen-yn'),
+      end: S('screen-end'),
+    };
+    function showScreen(name){
+      Object.values(screens).forEach(el => el.classList.add('hidden'));
+      screens[name].classList.remove('hidden');
+      screens[name].classList.add('pop');
+      setTimeout(()=> screens[name].classList.remove('pop'), 400);
+    }
+    function setStats(){
+      S('score').textContent = state.score;
+      S('level').textContent = state.level;
+      S('streak').textContent = state.streak;
+    }
+
+    /* ====== المحتوى ====== */
+    const defSteps = [
+      { title:"ما هي الأفعال الخمسة؟", icon:"📖",
+        content:"كل فعل مضارع اتصل بألف الاثنين أو واو الجماعة أو ياء المخاطبة."
+      },
+      { title:"الأشكال الخمسة:", icon:"✋",
+        content:"يفعلان، تفعلان، يفعلون، تفعلون، تفعلين."
+      },
+      { title:"أمثلة:", icon:"📝",
+        content:"(ألف الاثنين) يكتبان/تكتبان — (واو الجماعة) يكتبون/تكتبون — (ياء المخاطبة) تكتبين."
+      }
+    ];
+
+    const defQuiz = [
+      { q:"كم عدد الأفعال الخمسة؟", options:["ثلاثة","أربعة","خمسة","ستة"], correct:2,
+        exp:"عددها خمسة كما يدل الاسم." },
+      { q:"الأفعال الخمسة أفعال:", options:["ماضية","مضارعة","أمر","جامدة"], correct:1,
+        exp:"هي أفعال مضارعة متصلة بضمائر معينة." },
+      { q:"تتصل الأفعال الخمسة بـ:", options:["ألف الاثنين فقط","واو الجماعة فقط","ياء المخاطبة فقط","ألف الاثنين وواو الجماعة وياء المخاطبة"], correct:3,
+        exp:"تتصل بثلاثة ضمائر: ألف الاثنين وواو الجماعة وياء المخاطبة." }
+    ];
+
+    const conjQuiz = [
+      { verb:"كتب", q:"صرف 'كتب' مع ألف الاثنين للمذكر:", options:["يكتبان","تكتبان","كتبان","يكتبون"], correct:0,
+        exp:"يكتبان — فعل مضارع متصل بألف الاثنين للمذكر." },
+      { verb:"لعب", q:"صرف 'لعب' مع واو الجماعة:", options:["يلعبون","يلعب","لعب","لعبت"], correct:0,
+        exp:"يلعبون — فعل مضارع متصل بواو الجماعة للغائبين المذكر." },
+      { verb:"قرأ", q:"صرف 'قرأ' مع ياء المخاطبة:", options:["تقرئين","يقرأ","قرأوا","قراءة"], correct:0,
+        exp:"تقرئين — فعل مضارع متصل بياء المخاطبة (الهمزة مكسورة على كرسي الياء)." },
+      { verb:"درس", q:"أي من هذه الأفعال من الأفعال الخمسة؟", options:["يدرس","تدرسان","ندرس","ادرس"], correct:1,
+        exp:"تدرسان — مضارع متصل بألف الاثنين." }
+    ];
+
+    const drillVerbs = [
+      // ✅ من الأفعال الخمسة
+      { w:"يكتبان", f:true,  exp:"مضارع + ألف الاثنين" },
+      { w:"تكتبين", f:true,  exp:"مضارع + ياء المخاطبة" },
+      { w:"يكتبون", f:true,  exp:"مضارع + واو الجماعة" },   // يظهر مرة واحدة فقط
+      { w:"تلعبون", f:true,  exp:"مضارع + واو الجماعة" },
+      { w:"يلعبون", f:true,  exp:"مضارع + واو الجماعة" },   // يظهر مرة واحدة فقط
+      { w:"يشربون", f:true,  exp:"مضارع + واو الجماعة" },
+      { w:"تشربين", f:true,  exp:"مضارع + ياء المخاطبة" },
+      { w:"يخرجان", f:true,  exp:"مضارع + ألف الاثنين" },
+      { w:"يقفزان", f:true,  exp:"مضارع + ألف الاثنين" },
+      { w:"يرجعون", f:true,  exp:"مضارع + واو الجماعة" },
+      { w:"يطيرون", f:true,  exp:"مضارع + واو الجماعة" },
+
+      // ❌ ليست من الأفعال الخمسة
+      { w:"يكتب",  f:false, exp:"مضارع مفرد" },
+      { w:"يشرب",  f:false, exp:"مضارع مفرد" },
+      { w:"تشرب",  f:false, exp:"مضارع مفرد للمخاطبة" },
+      { w:"يخرج",  f:false, exp:"مضارع مفرد" },
+      { w:"يقفز",  f:false, exp:"مضارع مفرد" },
+      { w:"يرجع",  f:false, exp:"مضارع مفرد" },
+      { w:"يطير",  f:false, exp:"مضارع مفرد" },
+      { w:"شرب",   f:false, exp:"فعل ماضٍ" },
+      { w:"اكتب",  f:false, exp:"فعل أمر" },
+    ];
+
+    /* ====== أدوات عامة ====== */
+    function choiceButtons(container, options, onChoose){
+      container.innerHTML = "";
+      options.forEach((txt, i)=>{
+        const b = document.createElement('button');
+        b.textContent = txt; b.onclick = ()=> onChoose(i, b); container.appendChild(b);
+      });
+    }
+    function feedback(el, ok, html){
+      el.className = 'feedback ' + (ok?'ok':'bad');
+      el.innerHTML = html; el.classList.remove('hidden');
+      (ok?playApplause:playBoo)();
+    }
+    function addScore(correct, base=10, maxStreak=3){
+      if(correct){ state.streak++; const mult = Math.min(state.streak, maxStreak); state.score += base*mult; }
+      else{ state.streak = 0; }
+      setStats();
+    }
+
+    /* ====== تدفق اللعب ====== */
+    const defBar = S('def-bar');
+
+    function start(){
+      state.score=0; state.level=1; state.streak=0;
+      state.phase='def'; state.defStep=0; state.mcIndex=0; state.drillCount=0;
+      setStats(); renderDef();
+    }
+
+    // تعريف
+    function renderDef(){
+      showScreen('def');
+      const step = defSteps[state.defStep];
+      S('def-title').textContent = step.title;
+      S('def-icon').textContent = step.icon;
+      S('def-content').textContent = step.content;
+      defBar.style.width = `${(state.defStep/ (defSteps.length-1)) * 100}%`;
+    }
+    S('btn-def-next').onclick = ()=>{
+      state.defStep++;
+      if(state.defStep >= defSteps.length){ state.phase='def-quiz'; state.mcIndex=0; renderDefQuiz(); }
+      else renderDef();
+    };
+
+    // متعدد — تعريف أو تصريف
+    function renderMC(title, big, qObj, onDone){
+      showScreen('mc');
+      S('mc-title').textContent = title;
+      S('mc-big').textContent = big;
+      S('mc-question').textContent = qObj.q;
+      const cont = S('mc-options');
+      const fb = S('mc-feedback');
+      const next = S('btn-mc-next');
+      fb.classList.add('hidden'); next.classList.add('hidden');
+
+      choiceButtons(cont, qObj.options, (i)=>{
+        const ok = (i === qObj.correct);
+        // قفل وتلوين
+        [...cont.children].forEach((b, idx)=>{
+          b.disabled = true;
+          if(idx === qObj.correct){ b.style.background='linear-gradient(180deg, rgba(34,197,94,.15), rgba(34,197,94,.08))'; b.style.borderColor='#276d43'; }
+          if(idx === i && !ok){ b.style.background='linear-gradient(180deg, rgba(239,68,68,.15), rgba(239,68,68,.08))'; b.style.borderColor='#742d2d'; }
+          b.style.opacity = idx===qObj.correct || idx===i ? '1' : '.6';
+        });
+        addScore(ok, 12, 3);
+        feedback(fb, ok,
+          (ok? "إجابة صحيحة 🎉" : "إجابة خاطئة 😔") +
+          `<div class="hint" style="margin-top:6px">${qObj.exp}</div>`
+        );
+        next.classList.remove('hidden');
+        next.onclick = onDone;
+      });
+    }
+
+    function renderDefQuiz(){
+      if(state.mcIndex >= defQuiz.length){ state.phase='conj-quiz'; state.mcIndex=0; renderConjQuiz(); return; }
+      const q = defQuiz[state.mcIndex];
+      renderMC("اختبار التعريف","❓", q, ()=>{ state.mcIndex++; renderDefQuiz(); });
+    }
+
+    function renderConjQuiz(){
+      if(state.mcIndex >= conjQuiz.length){
+        state.level++; setStats();
+        state.phase='drill'; state.drillCount=0; renderDrill(); return;
+      }
+      const q = conjQuiz[state.mcIndex];
+      renderMC("اختبار التصريف","📝 "+q.verb, q, ()=>{ state.mcIndex++; renderConjQuiz(); });
+    }
+
+    // نعم/لا
+    let currentDrill = null;
+    function renderDrill(){
+      showScreen('yn');
+      const fb = S('yn-feedback'); fb.classList.add('hidden');
+      S('btn-yn-next').classList.add('hidden');
+
+      currentDrill = drillVerbs[Math.floor(Math.random()*drillVerbs.length)];
+      S('yn-word').textContent = currentDrill.w;
+
+      function pick(userVal){
+        const ok = (userVal === currentDrill.f);
+        addScore(ok, 8, 3);
+        feedback(fb, ok, (ok? "صحيح 🎉" : "خطأ 😔") + `<div class="hint" style="margin-top:6px">${currentDrill.exp}</div>`);
+        S('btn-yn-next').classList.remove('hidden');
+      }
+      S('btn-yes').onclick = ()=> pick(true);
+      S('btn-no').onclick  = ()=> pick(false);
+
+      S('btn-yn-next').onclick = ()=>{
+        state.drillCount++;
+        if(state.drillCount >= state.maxDrill){
+          state.phase='end';
+          renderEnd();
+        } else renderDrill();
+      };
+    }
+
+    function renderEnd(){
+      showScreen('end');
+      S('final-score').textContent = state.score;
+      S('final-level').textContent = state.level;
+      // تصفيق قصير للاحتفال
+      playApplause(); setTimeout(playApplause, 160);
+    }
+
+    // أزرار عامة
+    S('btn-start').onclick = ()=> start();
+    S('btn-restart').onclick = ()=>{ state.level=1; start(); };
+
+    // شاشة البداية
+    showScreen('start');
+    setStats();
+  </script>
+</body>
+</html>
